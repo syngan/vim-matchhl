@@ -39,6 +39,10 @@ function! s:hi_cursol(poslist) " {{{
   endif
 endfunction " }}}
 
+function! s:pos2str(pos)
+  return printf("%d-%d", a:pos[1], a:pos[2])
+endfunction
+
 function! s:matchhl() " {{{
   let hpos = getpos(".")
   let line = getline(".")
@@ -56,7 +60,25 @@ function! s:matchhl() " {{{
       call s:hi_cursol([pos1])
     endif
   else
-    match NONE
+    let dict = {}
+"    let p[s:pos2str(hpos)] = 1
+    " @vimlint(EVL102, 1, l:_)
+    for _ in range(100)
+      normal %
+      let pos = getpos(".")
+      let key = s:pos2str(pos)
+      if has_key(dict, key)
+        break
+      endif
+      let dict[key] = pos
+    endfor
+
+    if len(dict) == 1 || !has_key(dict, s:pos2str(hpos))
+      match NONE
+    else
+      call s:hi_cursol(values(dict))
+    endif
+    call setpos(".", hpos)
   endif
 endfunction " }}}
 
