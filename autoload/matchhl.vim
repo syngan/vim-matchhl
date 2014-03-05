@@ -44,6 +44,10 @@ function! s:pos2str(pos)
 endfunction
 
 function! s:matchhl() " {{{
+  let mode = mode()
+  if mode != 'n' && mode != 'i'
+    return
+  endif
   let hpos = getpos(".")
   let line = getline(".")
 
