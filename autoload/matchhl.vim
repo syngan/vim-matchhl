@@ -48,7 +48,11 @@ function! s:matchhl() " {{{
   if mode != 'n' && mode != 'i'
     return
   endif
+
   let hpos = getpos(".")
+  if foldclosed(hpos[1]) != -1
+    return
+  endif
   let line = getline(".")
 
   let char = line[hpos[2]-1]
