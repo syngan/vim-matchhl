@@ -3,6 +3,7 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
+
 function! s:get_val(key, val) " {{{
   " default 値付きの値取得.
   " b: があったらそれ, なければ g: をみる.
@@ -29,17 +30,23 @@ function! matchhl#is_enabled() " {{{
 endfunction " }}}
 
 function! s:hi_cursol(poslist) " {{{
-  if len(a:poslist) == 1
-    let pos = a:poslist[0]
-    exe printf('match Error /\%%%dl\%%%dc/', pos[1], pos[2])
-  else
-    let m = ""
-    let sep = '\('
-    for pos in a:poslist
-      let m .= printf('%s\%%%dl\%%%dc', sep, pos[1], pos[2])
-      let sep = '\|'
+  let grp = s:get_val('matchhl_group', 'Error')
+  let pri = s:get_val('matchhl_priority', 10)
+  if !exists('b:matchhl_matchid')
+    let b:matchhl_matchid = []
+  endif
+  for pos in a:poslist
+    let pat = printf('\%%%dl\%%%dc', pos[1], pos[2])
+    let b:matchhl_matchid += [matchadd(grp, pat, pri)]
+  endfor
+endfunction " }}}
+
+function! s:hl_clear() " {{{
+  if exists('b:matchhl_matchid')
+    for id in b:matchhl_matchid
+      call matchdelete(id)
     endfor
-    exe printf('match Error /%s\)/', m)
+    unlet b:matchhl_matchid
   endif
 endfunction " }}}
 
@@ -60,7 +67,7 @@ function! s:matchhl() " {{{
 
   let line = getline(".")
   let char = line[hpos[2]-1]
-redraw | echo printf("''=%s, '.=%s, '^=%s", string(getpos("''")), string(getpos("'.")), string(getpos("'^")))
+"redraw | echo printf("''=%s, '.=%s, '^=%s", string(getpos("''")), string(getpos("'.")), string(getpos("'^")))
   if char =~# '[{}()\[\]]'
     keepjumps normal! %
     let pos1 = getpos(".")
@@ -77,6 +84,7 @@ redraw | echo printf("''=%s, '.=%s, '^=%s", string(getpos("''")), string(getpos(
     " @vimlint(EVL102, 1, l:_)
     for _ in range(100)
       normal %
+
       "call keepmatchit#do('', 1, 'n')
       let pos = getpos(".")
       let key = s:pos2str(pos)
@@ -87,13 +95,13 @@ redraw | echo printf("''=%s, '.=%s, '^=%s", string(getpos("''")), string(getpos(
     endfor
 
     if len(dict) == 1 || !has_key(dict, s:pos2str(hpos))
-      match NONE
+      call s:hl_clear()
     else
       call s:hi_cursol(values(dict))
     endif
     call setpos(".", hpos)
   else
-    match NONE
+    call s:hl_clear()
   endif
 endfunction " }}}
 
