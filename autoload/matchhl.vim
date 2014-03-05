@@ -3,7 +3,11 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-let s:hilight = []
+function! s:get_val(key, val) " {{{
+  " default 値付きの値取得.
+  " b: があったらそれ, なければ g: をみる.
+  return get(b:, a:key, get(g:, a:key, a:val))
+endfunction " }}}
 
 function! matchhl#enable() " {{{
   augroup vimmatchhl
@@ -39,9 +43,9 @@ function! s:hi_cursol(poslist) " {{{
   endif
 endfunction " }}}
 
-function! s:pos2str(pos)
+function! s:pos2str(pos) " {{{
   return printf("%d-%d", a:pos[1], a:pos[2])
-endfunction
+endfunction " }}}
 
 function! s:matchhl() " {{{
   let mode = mode()
@@ -53,26 +57,27 @@ function! s:matchhl() " {{{
   if foldclosed(hpos[1]) != -1
     return
   endif
-  let line = getline(".")
 
+  let line = getline(".")
   let char = line[hpos[2]-1]
+redraw | echo printf("''=%s, '.=%s, '^=%s", string(getpos("''")), string(getpos("'.")), string(getpos("'^")))
   if char =~# '[{}()\[\]]'
-    normal %
+    keepjumps normal! %
     let pos1 = getpos(".")
-    normal %
+    keepjumps normal! %
     let pos2 = getpos(".")
     if pos2 == hpos
       call s:hi_cursol([pos1, pos2])
     else
-      call setpos(".", hpos)
       call s:hi_cursol([pos1])
+      call setpos(".", hpos)
     endif
-  else
+  elseif s:get_val('matchhl_use_mapping', 0)
     let dict = {}
-"    let p[s:pos2str(hpos)] = 1
     " @vimlint(EVL102, 1, l:_)
     for _ in range(100)
       normal %
+      "call keepmatchit#do('', 1, 'n')
       let pos = getpos(".")
       let key = s:pos2str(pos)
       if has_key(dict, key)
@@ -87,6 +92,8 @@ function! s:matchhl() " {{{
       call s:hi_cursol(values(dict))
     endif
     call setpos(".", hpos)
+  else
+    match NONE
   endif
 endfunction " }}}
 
