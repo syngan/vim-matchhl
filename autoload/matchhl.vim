@@ -82,7 +82,9 @@ function! s:matchhl() " {{{
   let line = getline(".")
   let char = line[hpos[2]-1]
 "redraw | echo printf("''=%s, '.=%s, '^=%s", string(getpos("''")), string(getpos("'.")), string(getpos("'^")))
+
   if char =~# '[{}()\[\]]'
+    let win = winsaveview()
     keepjumps normal! %
     let pos1 = getpos(".")
     keepjumps normal! %
@@ -93,7 +95,9 @@ function! s:matchhl() " {{{
       call s:hi_cursol([pos1], 0)
       call setpos(".", hpos)
     endif
+    call winrestview(win)
   elseif s:get_val('matchhl_allow_break_jumplist', 0) || !has('jumplist')
+    let win = winsaveview()
     let dict = {}
     " @vimlint(EVL102, 1, l:_)
     for _ in range(100)
@@ -114,6 +118,7 @@ function! s:matchhl() " {{{
     endif
     " かならず最後にやること.
     call setpos(".", hpos)
+    call winrestview(win)
   else
     call s:hl_clear()
   endif
