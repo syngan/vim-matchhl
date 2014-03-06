@@ -5,8 +5,8 @@ set cpo&vim
 
 
 function! s:get_val(key, val) " {{{
-  " default $BCMIU$-$NCM<hF@(B.
-  " b: $B$,$"$C$?$i$=$l(B, $B$J$1$l$P(B g: $B$r$_$k(B.
+  " default 値付きの値取得.
+  " b: があったらそれ, なければ g: をみる.
   return get(b:, a:key, get(g:, a:key, a:val))
 endfunction " }}}
 
@@ -29,14 +29,28 @@ function! matchhl#is_enabled() " {{{
   return s:flag_enable
 endfunction " }}}
 
-function! s:hi_cursol(poslist) " {{{
+" word=1 のときは, pos が変わることに注意
+function! s:hi_cursol(poslist, word) " {{{
   let grp = s:get_val('matchhl_group', 'Error')
   let pri = s:get_val('matchhl_priority', 10)
   if !exists('b:matchhl_matchid')
     let b:matchhl_matchid = []
   endif
   for pos in a:poslist
-    let pat = printf('\%%%dl\%%%dc', pos[1], pos[2])
+    if a:word
+      call setpos(".", pos)
+      keepjumps normal! lb
+      let left = getpos(".")
+      if left[2] == 1
+        keepjumps normal! e
+      else
+        keepjumps normal! he
+      endif
+      let right = getpos(".")
+      let pat = printf('\%%%dl\%%>%dc.\%%<%dc', pos[1], left[2]-1, right[2]+2)
+    else
+      let pat = printf('\%%%dl\%%%dc', pos[1], pos[2])
+    endif
     let b:matchhl_matchid += [matchadd(grp, pat, pri)]
   endfor
 endfunction " }}}
@@ -74,18 +88,17 @@ function! s:matchhl() " {{{
     keepjumps normal! %
     let pos2 = getpos(".")
     if pos2 == hpos
-      call s:hi_cursol([pos1, pos2])
+      call s:hi_cursol([pos1, pos2], 0)
     else
-      call s:hi_cursol([pos1])
+      call s:hi_cursol([pos1], 0)
       call setpos(".", hpos)
     endif
-  elseif s:get_val('matchhl_use_mapping', 0)
+  elseif s:get_val('matchhl_allow_break_jumplist', 0) || !has('jumplist')
     let dict = {}
     " @vimlint(EVL102, 1, l:_)
     for _ in range(100)
       normal %
-
-      "call keepmatchit#do('', 1, 'n')
+      " call keepmatchit#do('', 1, 'n')
       let pos = getpos(".")
       let key = s:pos2str(pos)
       if has_key(dict, key)
@@ -97,8 +110,9 @@ function! s:matchhl() " {{{
     if len(dict) == 1 || !has_key(dict, s:pos2str(hpos))
       call s:hl_clear()
     else
-      call s:hi_cursol(values(dict))
+      call s:hi_cursol(values(dict), 1)
     endif
+    " かならず最後にやること.
     call setpos(".", hpos)
   else
     call s:hl_clear()
