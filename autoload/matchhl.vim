@@ -58,7 +58,10 @@ endfunction " }}}
 function! s:hl_clear() " {{{
   if exists('b:matchhl_matchid')
     for id in b:matchhl_matchid
-      call matchdelete(id)
+      try
+        call matchdelete(id)
+      catch
+      endtry
     endfor
     unlet b:matchhl_matchid
   endif
