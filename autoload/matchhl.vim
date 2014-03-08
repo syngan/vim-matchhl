@@ -155,6 +155,15 @@ function! s:get_pairs(l) " {{{
   return pairs
 endfunction " }}}
 
+function! s:chk_found(found, pos) " {{{
+  for f in a:found
+    if f[0] == a:pos[1] && f[1] == a:pos[2]
+      return 1
+    endif
+  endfor
+  return 0
+endfunction " }}}
+
 function! s:matchit(char, cpos) " {{{
 
   if !s:valid_attr(a:cpos)
@@ -199,19 +208,10 @@ function! s:matchit(char, cpos) " {{{
       call setpos(".", [0, f[0], f[1], 0])
     endwhile
 
-    let flag = 0
     let found = [start] + found + [end]
-    for f in found
-      if f[0] == a:cpos[1] && f[1] == a:cpos[2]
-        let flag = 1
-        break
-      endif
-    endfor
-    if flag == 0
-      continue
+    if s:chk_found(found, a:cpos)
+      return found
     endif
-
-    return found
   endfor
 
   return []
