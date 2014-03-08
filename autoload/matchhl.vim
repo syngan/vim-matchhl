@@ -41,7 +41,6 @@ function! s:hi_cursol(poslist, word) " {{{
   if !exists('b:matchhl_matchid')
     let b:matchhl_matchid = []
   endif
-  echo s:log("call hi_cursol=" . string(a:poslist))
   for pos in a:poslist
     if a:word
       call setpos(".", [0, pos[0], pos[1], 0])
@@ -145,13 +144,11 @@ endfunction " }}}
 function! s:matchit(char, cpos) " {{{
 
   if !s:valid_attr(a:cpos)
-    redraw | echo "invalid: " . string(a:cpos)
     return []
   endif
 
   if b:match_words !~ a:char
     " 必要ない文字は skip
-    echo "unused:" . string(a:char) . ":"
     return []
   endif
 
@@ -205,7 +202,6 @@ function! s:matchit(char, cpos) " {{{
         break
       endif
     endfor
-    call s:log("flag=" . flag)
     if flag == 0
       continue
     endif
@@ -213,7 +209,6 @@ function! s:matchit(char, cpos) " {{{
     return found
   endfor
 
-  redraw | echo "not found"
   return []
 endfunction " }}}
 
