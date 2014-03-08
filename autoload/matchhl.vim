@@ -13,7 +13,8 @@ endfunction " }}}
 function! matchhl#enable() " {{{
   augroup vimmatchhl
     autocmd!
-    autocmd CursorMoved,CursorMovedI * call s:matchhl()
+    autocmd CursorMoved,CursorMovedI * call s:matchhl(0)
+    autocmd CursorHold,CursorHoldI * call s:matchhl(1)
   augroup END
   let s:flag_enable = 1
 endfunction " }}}
@@ -212,7 +213,7 @@ function! s:matchit(char, cpos) " {{{
   return []
 endfunction " }}}
 
-function! s:matchhl() " {{{
+function! s:matchhl(hold) " {{{
   let mode = mode()
   if mode != 'n' && mode != 'i'
     return
@@ -241,7 +242,7 @@ function! s:matchhl() " {{{
     endif
     call winrestview(win)
   elseif s:get_val('matchhl_use_match_words', 1) &&
-        \ exists('b:match_words')
+        \ exists('b:match_words') && a:hold
     let win = winsaveview()
     let pair = s:matchit(char, hpos)
     if len(pair) <= 1
