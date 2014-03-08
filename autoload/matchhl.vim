@@ -127,32 +127,55 @@ function! s:searchpair(start, mid, end, flag) " {{{
 	     \ 'synIDattr(synID(line("."), col("."), 0), "name") =~? "\(string\|comment\)"')
 endfunction " }}}
 
+function! s:compos(p, q) " {{{
+  if a:p[0] < a:q[0]
+    return -1
+  elseif a:p[0] > a:q[0]
+    return +1
+  elseif a:p[1] < a:q[1]
+    return -1
+  elseif a:p[1] > a:q[1]
+    return +1
+  else
+    return 0
+  endif
+endfunction " }}}
+
 function! s:get_startpos(pair) " {{{
 
-  let s1 = s:searchpair(a:pair[0], '', a:pair[-1], 'b')
-  keepjumps normal! l
-  let s2 = s:searchpair(a:pair[0], '', a:pair[-1], 'b')
-  if s1 == [0, 0]
-    if s2 == [0, 0]
-      return s1
-    else
-      return s2
-    endif
-  elseif s2 == [0, 0]
-    return s1
-  elseif s1[0] < s2[0]
-    return s2
-  elseif s1[0] > s2[0]
-    return s1
-  elseif s1[1] < s2[1]
-    return s2
-  else
-    return s1
+  let sp = s:searchpair(a:pair[0], '', a:pair[-1], 'bc')
+  if sp == [0, 0]
+    return [sp, sp]
   endif
+
+  call s:setpos(sp)
+  let sq = s:searchpair(a:pair[0], '', a:pair[-1], 'b')
+  if sq == [0, 0]
+    " sp = start である.
+    let en = s:searchpair(a:pair[0], '', a:pair[-1], '')
+    return [sp, en]
+  endif
+
+  call s:setpos(sq)
+  let nx = s:searchpair(a:pair[0], '', a:pair[-1], '')
+  if nx == sp
+    " sp = end である
+    return [sq, sp]
+  endif
+
+  " sp = start である
+  call s:setpos(sp)
+  let en = s:searchpair(a:pair[0], '', a:pair[-1], '')
+  return [sp, en]
+
 endfunction " }}}
 
 function! s:setpos(s) " {{{
   return setpos(".", [0, a:s[0], a:s[1], 0])
+endfunction " }}}
+
+function! s:setposl(s) " {{{
+  return setpos(".", [0, a:s[0], a:s[1]+1, 0])
 endfunction " }}}
 
 function! s:get_mid(pair) " {{{
@@ -210,11 +233,11 @@ function! s:matchit(char, cpos) " {{{
     " if の i の部分では前の if を返す.
     " endif の n でやると前の if を返す.
     " なんて仕様なんだ.
-    let start = s:get_startpos(pairs)
+    let [start, end] = s:get_startpos(pairs)
     call s:log("start=" . string(start) . ":" .pairs[0] .string(a:cpos) . string(getpos(".")))
-
-    call s:setpos(start)
-    let end = s:searchpair(pairs[0], '', pairs[-1], '')
+    if start == [0, 0]
+      continue
+    endif
     call s:log("end=" . string(end) . string(getpos(".")))
 
     let mid = s:get_mid(pairs)
