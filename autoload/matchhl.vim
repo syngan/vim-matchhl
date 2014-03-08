@@ -34,6 +34,26 @@ function! matchhl#hilight() " {{{
   return s:matchhl(1)
 endfunction " }}}
 
+" searchpostest (for filetype=vim)
+function! matchhl#searchpair(kind, f) " {{{
+  if a:kind == 'if'
+    let start = '\<if\>'
+    let mid = '\<el\%[seif]\>'
+    let end = '\<en\%[dif]\>'
+  elseif a:kind == 'while' || a:kind == 'for'
+    let start = '\<\(wh\%[ile]\|for\)\>'
+    let mid = '\(\<brea\%[k]\>\|\<con\%[tinue]\>\)'
+    let end = '\<end\(w\%[hile]\|fo\%[r]\)\>'
+  else
+    return [-1, -1]
+  endif
+
+  return "mb=" . string(s:searchpair(start, mid, end, 'b' . a:f))
+     \ . " b=" . string(s:searchpair(start, '', end, 'b' . a:f))
+     \ . "m =" . string(s:searchpair(start, 'mid', end, a:f))
+     \ . "  =" . string(s:searchpair(start, '', end, a:f))
+endfunction " }}}
+
 " word=1 のときは, pos が変わることに注意
 function! s:hi_cursol(poslist, word) " {{{
   let grp = s:get_val('matchhl_group', 'Error')
