@@ -3,7 +3,6 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-
 function! s:get_val(key, val) " {{{
   " default 値付きの値取得.
   " b: があったらそれ, なければ g: をみる.
@@ -141,6 +140,21 @@ function! s:get_mid(pair) " {{{
   endif
 endfunction " }}}
 
+function! s:get_pairs(l) " {{{
+  let pairs = split(a:l, ':')
+  let i = 0
+  while i < len(pairs)
+    if pairs[i][-1] == '\'
+      " merge
+      let pairs[i] .= pairs[i+1]
+      call remove(pairs, i+1)
+    endif
+    let i += 1
+  endwhile
+
+  return pairs
+endfunction " }}}
+
 function! s:matchit(char, cpos) " {{{
 
   if !s:valid_attr(a:cpos)
@@ -154,16 +168,7 @@ function! s:matchit(char, cpos) " {{{
 
   let list = split(b:match_words, ",")
   for l in list
-    let pairs = split(l, ':')
-    let i = 0
-    while i < len(pairs)
-      if pairs[i][-1] == '\'
-        " merge
-        let pairs[i] .= pairs[i+1]
-        call remove(pairs, i+1)
-      endif
-      let i += 1
-    endwhile
+    let pairs = s:get_pairs(l)
 
     " note: setpos は jumplist を更新しない
     call setpos(".", a:cpos)
