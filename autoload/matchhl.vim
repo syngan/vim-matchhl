@@ -43,7 +43,7 @@ function! s:hi_cursol(poslist, word) " {{{
   endif
   for pos in a:poslist
     if a:word
-      call setpos(".", [0, pos[0], pos[1], 0])
+      call s:setpos(pos)
       keepjumps normal! lb
       let left = getpos(".")
       if left[2] == 1
@@ -131,6 +131,10 @@ function! s:get_startpos(pair) " {{{
   endif
 endfunction " }}}
 
+function! s:setpos(s) " {{{
+  return setpos(".", [0, a:s[0], a:s[1], 0])
+endfunction " }}}
+
 function! s:get_mid(pair) " {{{
   if len(a:pair) > 3
     return '\(' . join(a:pair[1 : -2]) . '\)'
@@ -189,7 +193,7 @@ function! s:matchit(char, cpos) " {{{
     let start = s:get_startpos(pairs)
     call s:log("start=" . string(start) . ":" .pairs[0] .string(a:cpos) . string(getpos(".")))
 
-    call setpos(".", [0, start[0], start[1], 0])
+    call s:setpos(start)
     let end = s:searchpair(pairs[0], '', pairs[-1], '')
     call s:log("end=" . string(end) . string(getpos(".")))
 
@@ -206,7 +210,7 @@ function! s:matchit(char, cpos) " {{{
       endif
       call s:log("f=" . string(f) . ":" . string(getpos(".")))
       let found = [f] + found
-      call setpos(".", [0, f[0], f[1], 0])
+      call s:setpos(f)
     endwhile
 
     let found = [start] + found + [end]
