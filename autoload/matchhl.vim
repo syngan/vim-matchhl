@@ -191,7 +191,7 @@ function! s:matchit(char, cpos) " {{{
     while 1
       let f = searchpairpos(pairs[0], mid, pairs[-1], 'nW',
 	     \ 'synIDattr(synID(line("."), col("."), 0), "name") =~? "\(string\|comment\)"')
-      if f == end || f == [0, 0]
+      if f == end
         break
       endif
       call s:log("f=" . string(f) . ":" . string(getpos(".")))
