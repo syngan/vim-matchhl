@@ -127,6 +127,16 @@ function! s:get_startpos(pair) " {{{
   endif
 endfunction " }}}
 
+function! s:get_mid(pair) " {{{
+  if len(a:pair) > 3
+    return '\(' . join(a:pair[1 : -2]) . '\)'
+  elseif len(a:pair) == 3
+    return a:pair[1]
+  else
+    return ''
+  endif
+endfunction " }}}
+
 function! s:matchit(char, cpos) " {{{
 
   if !s:valid_attr(a:cpos)
@@ -166,13 +176,7 @@ function! s:matchit(char, cpos) " {{{
     let end = s:searchpair(pairs[0], '', pairs[-1], '')
     call s:log("end=" . string(end) . string(getpos(".")))
 
-    if len(pairs) > 3
-      let mid = '\(' . join(pairs[1 : -2]) . '\)'
-    elseif len(pairs) == 3
-      let mid = pairs[1]
-    else
-      let mid = ''
-    endif
+    let mid = s:get_mid(pairs)
 
     let found = []
     call setpos(".", [0, start[0], start[1], 0])
