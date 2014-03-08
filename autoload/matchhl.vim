@@ -30,6 +30,10 @@ function! matchhl#is_enabled() " {{{
   return s:flag_enable
 endfunction " }}}
 
+function! matchhl#hilight() " {{{
+  return s:matchhl(1)
+endfunction " }}}
+
 " word=1 のときは, pos が変わることに注意
 function! s:hi_cursol(poslist, word) " {{{
   let grp = s:get_val('matchhl_group', 'Error')
