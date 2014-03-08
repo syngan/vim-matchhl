@@ -98,6 +98,11 @@ function! matchhl#s() " {{{
   return r
 endfunction " }}}
 
+function! s:searchpair(start, mid, end, flag) " {{{
+  return searchpairpos(a:start, a:mid, a:end, a:flag . 'nW',
+	     \ 'synIDattr(synID(line("."), col("."), 0), "name") =~? "\(string\|comment\)"')
+endfunction " }}}
+
 function! s:matchit(char, cpos) " {{{
 
   if !s:valid_attr(a:cpos)
@@ -130,11 +135,9 @@ function! s:matchit(char, cpos) " {{{
     " if の i の部分では前の if を返す.
     " endif の n でやると前の if を返す.
     " なんて仕様なんだ.
-    let s1 = searchpairpos(pairs[0], '', pairs[-1], 'nWb',
-	     \ 'synIDattr(synID(line("."), col("."), 0), "name") =~? "\(string\|comment\)"')
+    let s1 = s:searchpair(pairs[0], '', pairs[-1], 'b')
     keepjumps normal! l
-    let s2 = searchpairpos(pairs[0], '', pairs[-1], 'nWb',
-	     \ 'synIDattr(synID(line("."), col("."), 0), "name") =~? "\(string\|comment\)"')
+    let s2 = s:searchpair(pairs[0], '', pairs[-1], 'b')
     call s:log("s1=" . string(s1) . ": s2=" .string(s2) . ":" . string(getpos(".")))
     if s1 == [0, 0]
       if s2 == [0, 0]
@@ -156,8 +159,7 @@ function! s:matchit(char, cpos) " {{{
     call s:log("start=" . string(start) . ":" .pairs[0] .string(a:cpos) . string(getpos(".")))
 
     call setpos(".", [0, start[0], start[1], 0])
-    let end = searchpairpos(pairs[0], '', pairs[-1], 'nW',
-	      \ 'synIDattr(synID(line("."), col("."), 0), "name") =~? "\(string\|comment\)"')
+    let end = s:searchpair(pairs[0], '', pairs[-1], '')
     call s:log("end=" . string(end) . string(getpos(".")))
 
     if len(pairs) > 3
