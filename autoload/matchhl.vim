@@ -103,6 +103,30 @@ function! s:searchpair(start, mid, end, flag) " {{{
 	     \ 'synIDattr(synID(line("."), col("."), 0), "name") =~? "\(string\|comment\)"')
 endfunction " }}}
 
+function! s:get_startpos(pair) " {{{
+
+  let s1 = s:searchpair(a:pair[0], '', a:pair[-1], 'b')
+  keepjumps normal! l
+  let s2 = s:searchpair(a:pair[0], '', a:pair[-1], 'b')
+  if s1 == [0, 0]
+    if s2 == [0, 0]
+      return s1
+    else
+      return s2
+    endif
+  elseif s2 == [0, 0]
+    return s1
+  elseif s1[0] < s2[0]
+    return s2
+  elseif s1[0] > s2[0]
+    return s1
+  elseif s1[1] < s2[1]
+    return s2
+  else
+    return s1
+  endif
+endfunction " }}}
+
 function! s:matchit(char, cpos) " {{{
 
   if !s:valid_attr(a:cpos)
@@ -135,27 +159,7 @@ function! s:matchit(char, cpos) " {{{
     " if の i の部分では前の if を返す.
     " endif の n でやると前の if を返す.
     " なんて仕様なんだ.
-    let s1 = s:searchpair(pairs[0], '', pairs[-1], 'b')
-    keepjumps normal! l
-    let s2 = s:searchpair(pairs[0], '', pairs[-1], 'b')
-    call s:log("s1=" . string(s1) . ": s2=" .string(s2) . ":" . string(getpos(".")))
-    if s1 == [0, 0]
-      if s2 == [0, 0]
-        continue
-      else
-        let start = s2
-      endif
-    elseif s2 == [0, 0]
-      let start = s1
-    elseif s1[0] < s2[0]
-      let start = s2
-    elseif s1[0] > s2[0]
-      let start = s1
-    elseif s1[1] < s2[1]
-      let start = s2
-    else
-      let start = s1
-    endif
+    let start = s:get_startpos(pairs)
     call s:log("start=" . string(start) . ":" .pairs[0] .string(a:cpos) . string(getpos(".")))
 
     call setpos(".", [0, start[0], start[1], 0])
