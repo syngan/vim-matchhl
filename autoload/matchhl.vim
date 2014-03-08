@@ -19,6 +19,7 @@ function! matchhl#enable() " {{{
 endfunction " }}}
 
 function! matchhl#disable() " {{{
+  call s:hl_clear()
   augroup vimmatchhl
     autocmd!
   augroup END
