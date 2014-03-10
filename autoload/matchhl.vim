@@ -112,16 +112,6 @@ function! s:log(mes) " {{{
 endfunction " }}}
 " @vimlint(EVL103, 0, a:mes)
 
-function! matchhl#s() " {{{
-  let hpos = getpos(".")
-  keepjumps normal! lb
-  let line = getline(".")
-  let char = line[hpos[2]-1]
-  let r = s:matchit(char, hpos)
-  call setpos(".", hpos)
-  return r
-endfunction " }}}
-
 function! s:searchpair(start, mid, end, flag) " {{{
   return searchpairpos(a:start, a:mid, a:end, a:flag . 'nW',
 	     \ 'synIDattr(synID(line("."), col("."), 0), "name") =~? "\(string\|comment\)"')
