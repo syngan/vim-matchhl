@@ -34,7 +34,7 @@ function! matchhl#hilight() " {{{
   return s:matchhl(1)
 endfunction " }}}
 
-" searchpostest (for filetype=vim)
+" DEBUG: searchpostest (for filetype=vim)
 function! matchhl#searchpair(kind, f) " {{{
   if a:kind == 'if'
     let start = '\<if\>'
@@ -44,14 +44,35 @@ function! matchhl#searchpair(kind, f) " {{{
     let start = '\<\(wh\%[ile]\|for\)\>'
     let mid = '\(\<brea\%[k]\>\|\<con\%[tinue]\>\)'
     let end = '\<end\(w\%[hile]\|fo\%[r]\)\>'
+  elseif a:kind == '{' || a:kind == '}'
+    let start = '{'
+    let mid = ''
+    let end = '}'
   else
     return [-1, -1]
   endif
 
-  return "mb=" . string(s:searchpair(start, mid, end, 'b' . a:f))
-     \ . " b=" . string(s:searchpair(start, '', end, 'b' . a:f))
-     \ . "m =" . string(s:searchpair(start, 'mid', end, a:f))
-     \ . "  =" . string(s:searchpair(start, '', end, a:f))
+  if mid == ''
+  return ''
+     \ . "b="   . string(s:searchpair(start, '', end, 'b' . a:f))
+     \ . "sb="  . string(searchpos(start, 'bnW'))
+     \ . "bc="  . string(s:searchpair(start, '', end, 'bc' . a:f))
+     \ . "sbc=" . string(searchpos(start, 'bcnW'))
+     \ . "_="   . string(s:searchpair(start, '', end, a:f))
+     \ . "s="  . string(searchpos(end, 'nW'))
+     \ . "c="   . string(s:searchpair(start, '', end, 'c'. a:f))
+     \ . "sc=" . string(searchpos(end, 'cnW'))
+  endif
+
+  return ''
+     \ . "mb="  . string(s:searchpair(start, mid, end, 'b' . a:f))
+     \ . "b="   . string(s:searchpair(start, '', end, 'b' . a:f))
+     \ . "mbc=" . string(s:searchpair(start, mid, end, 'bc' . a:f))
+     \ . "bc="  . string(s:searchpair(start, '', end, 'bc' . a:f))
+     \ . "m="   . string(s:searchpair(start, 'mid', end, a:f))
+     \ . "_="   . string(s:searchpair(start, '', end, a:f))
+     \ . "mc="  . string(s:searchpair(start, 'mid', end, 'c' . a:f))
+     \ . "c="   . string(s:searchpair(start, '', end, 'c'. a:f))
 endfunction " }}}
 
 " word=1 のときは, pos が変わることに注意
