@@ -108,7 +108,9 @@ endfunction " }}}
 
 " @vimlint(EVL103, 1, a:mes)
 function! s:log(mes) " {{{
-"  silent! call vimconsole#log(a:mes)
+  if s:get_val('mathhl_debug', 0)
+    silent! call vimconsole#log(a:mes)
+  endif
 endfunction " }}}
 " @vimlint(EVL103, 0, a:mes)
 
